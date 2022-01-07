@@ -69,7 +69,14 @@ const removeAccents = (text) =>
 
         // get raining forecast
         const raining = await axios.get('https://rpcache-aa.meteofrance.com/internet2018client/2.0/nowcast/rain?lat=48.841348&lon=2.386885', headers);
-        const willRain = raining.data.properties.forecast.find(fc => fc['rain_intensity'] > 1) >= 0;
+        const rainIntensity = Math.max(...raining.data.properties.forecast.map(fc => fc['rain_intensity']));
+        let rainLabel = '  ';
+        if (rainIntensity >= 4) {
+            rainLabel = 'RA';
+        } else if (rainIntensity >= 2) {
+            rainLabel = 'ra'
+        }
+
         if (VERBOSE) {
             console.log('RAINING');
             console.log(raining.data);
@@ -78,7 +85,7 @@ const removeAccents = (text) =>
         // const rainForecast = raining.data.properties.forecast.map(fc => fc['rain_intensity']).join('');
         // console.log(rainForecast);
 
-        const l1 = `${daily.time.slice(8, 10)}-${daily.time.slice(5, 7)} ${Math.round(daily['T_min'])}->${Math.round(daily['T_max'])}C ${willRain ? 'RA' : '  '}          `.slice(0, 16);
+        const l1 = `${daily.time.slice(8, 10)}-${daily.time.slice(5, 7)} ${Math.round(daily['T_min'])}->${Math.round(daily['T_max'])}C ${rainLabel}          `.slice(0, 16);
         const l2 = `${removeAccents(daily['daily_weather_description'])}                `.slice(0, 16);
 
         const ephemeris = await axios.get('https://rpcache-aa.meteofrance.com/internet2018client/2.0/ephemeris?lat=48.841348&lon=2.386885', headers)
@@ -105,7 +112,7 @@ const removeAccents = (text) =>
         const saintSplit = ephData.saint.split(' ');
         const saintPrefix = saintSplit[0] === 'Saint' ? 'St' : 'Ste';
         const saintName = saintSplit.slice(1).join(' ');
-        const l4 = `${saintPrefix} ${saintName}                  `.slice(0, 16);
+        const l4 = `${saintPrefix} ${removeAccents(saintName)}                  `.slice(0, 16);
 
         const result = `${l1}${l3}\n${l2}${l4}`;
         console.log(result);

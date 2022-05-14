@@ -68,7 +68,7 @@ const removeAccents = (text) =>
         };
 
         // get actual forecast data
-        let daily = { time: '', 'daily_weather_description': '??', 'T_min': '99', 'T_max': '99' };
+        let daily = { time: '', 'daily_weather_description': '??', 'T_min': '99', 'T_max': '99' };
         try {
             assert(derivedToken, 'no token');
             const forecast = await axios.get(`https://rpcache-aa.meteofrance.com/internet2018client/2.0/forecast?lat=${LAT}&lon=${LON}&id=&instants=&day=2`, headers);
@@ -105,6 +105,29 @@ const removeAccents = (text) =>
             // console.log(rainForecast);
         } catch (e) {
             console.warn(`cannot fetch raining forecast ${e}`);
+        }
+
+        // if it does not rain, grab the pollen atmospheric report
+        if (rainLabel === '  ') {
+            try {
+                const pollenRaw = await axios.get('https://pollens.fr/risks/thea/counties/75');
+                if (VERBOSE) {
+                    console.log(pollenRaw.data);
+                }
+                const pollenReport = pollenRaw.data;
+                const grObject = pollenReport.risks.find(r => r.pollenName === 'Graminées');
+                if (grObject) {
+                    rainLabel = `G${grObject.level}`;
+                } else {
+                    console.warn('pollen object not found');
+                }
+            } catch(e) {
+                console.warn(`cannot fetch pollen report ${e}`);
+            }
+        } else {
+            if (VERBOSE) {
+                console.info(`rainLabel=${rainLabel}, skipping display of pollen report`);
+            }
         }
 
         const l1 = `${daily.time.slice(8, 10)}-${daily.time.slice(5, 7)} ${Math.round(daily['T_min'])}->${Math.round(daily['T_max'])}C ${rainLabel}          `.slice(0, 16);

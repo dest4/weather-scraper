@@ -2,7 +2,7 @@
 
 ![scraper](device.jpg)
 
-Scrapes weather data from meteofrance.fr
+Scrapes weather data from [Météo France](https://meteofrance.com/).
 
 Also grabs Paris Orly weather report.
 
@@ -17,7 +17,7 @@ Displays result on a LCD screen connected to an old Pine64 board I had lying aro
 - `DD` day of month
 - `MM` minimum temperature of the day (°C)
 - `NN` maximum temperature of the day (°C)
-- `RL` rain label, either empty `  ` if no rain in the next hour, `ra` if mild rain, `RA` if big one.
+- `RL` rain label: `ra` if mild rain in the next hour, `RA` if big one. If no rain forecast, gets the allergo-pollinic risk from [pollens.fr](https://pollens.fr/) instead: from `G0` (no risk) to `G3` (maximum risk).
 
 ### Line 2
 Weather description according to Météo France.
@@ -30,3 +30,7 @@ Weather description according to Météo France.
 
 ### Line 4
 Ephemeris of the day, which saint we should celebrate!
+
+## Development
+
+`node scraper.js --verbose`

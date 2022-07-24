@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import RPi.GPIO as GPIO
-# import requests as req
 import subprocess
 from time import sleep
 
@@ -73,23 +72,25 @@ class HD44780:
                 self.cmd(ord(char),True)
 
 if __name__ == '__main__':
-    lcd = HD44780()
-    #r = req.get('https://api.checkwx.com/metar/LFPO', headers={"X-API-Key": "a61f8e9f3c9a4f8083910ef199"})
-    #r = req.get('https://api.checkwx.com/taf/LFPO', headers={"X-API-Key": "a61f8e9f3c9a4f8083910ef199"})
-    #lcd.message(r.text)
-    #all = str(r.json()['data'])[2:-2]
-    #l1 = all[5:21]
-    #l2 = all[21:37]
-    #l3 = all[37:53]
-    #l4 = all[53:69]
-    #print(all)
-    #print(l1)
-    #print(l2)
-    #print(l3)
-    #print(l4)
-    #lcd.message(l1 + l3 + "\n" + l2 + l4)
-    #lcd.message(" Raspberry Pi YOLOOOOO\n  Take a byte!")
     proc = subprocess.run('node /home/dietpi/scraper.js', shell=True, capture_output=True, text=True, check=True)
+    lcd = HD44780()
     lcd.message(proc.stdout)
-    
     GPIO.cleanup()
+    
+    # bare bones export of info for web interface
+    f = open('/home/dietpi/output/index.html', 'w')
+    f.write('<html>' + \
+        '<head><style type="text/css" media="screen">' + \
+            '.container { display: flex; align-items: center; height: 100%; flex-direction: column; justify-content: center; }' + \
+            'p { text-align: center; font-family: monospace; font-size: 300%; }' + \
+        '</style></head>' + \
+        '<body>' + \
+        '<div class="container">' + \
+            '<p>' + proc.stdout[0:16] + '</p>' + \
+            '<p>' + proc.stdout[16:32] + '</p>' + \
+            '<p>' + proc.stdout[32:48] + '</p>' + \
+            '<p>' + proc.stdout[48:64] + '</p>' + \
+        '</div>' + \
+        '</body>' + \
+    '</html>')
+    f.close()

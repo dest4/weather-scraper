@@ -6,6 +6,9 @@ const VERBOSE = process.argv.includes('--verbose');
 const CHECKWX_KEY = 'a61f8e9f3c9a4f8083910ef199';
 const LAT = 48.841348;
 const LON = 2.386885;
+const AIRPARIF_KEY = 'a5e3791e-a6be-bd9b-c78f-c46dea3648d8'; // go to https://www.airparif.fr/interface-de-programmation-applicative to get yours
+const INSEE_CITY_CODE = 75112; // refer to https://www.insee.fr/fr/metadonnees/cog/departement/DEP75-paris if you need to change this
+
 
 const accentsMap = new Map([
     ["A", "Á|À|Ã|Â|Ä"],
@@ -116,7 +119,7 @@ const removeAccents = (text) =>
                 }
                 const pollenReport = pollenRaw.data;
                 const grObject = pollenReport.risks.find(r => r.pollenName === 'Graminées');
-                if (grObject) {
+                if (grObject && +grObject.level >= 2) {
                     rainLabel = `G${grObject.level}`;
                 } else {
                     console.warn('pollen object not found');
@@ -127,6 +130,35 @@ const removeAccents = (text) =>
         } else {
             if (VERBOSE) {
                 console.info(`rainLabel=${rainLabel}, skipping display of pollen report`);
+            }
+        }
+
+        // if no particular pollen alert, get the atmospheric report
+        if (rainLabel === '  ') {
+            try {
+                const headers = {
+                    'headers': {
+                        'accept': 'application/json',
+                        'X-Api-Key': AIRPARIF_KEY,
+                    },
+                };
+                const atmoRaw = await axios.get(`https://api.airparif.asso.fr/indices/prevision/commune?insee=${INSEE_CITY_CODE}`, headers);
+                if (VERBOSE) {
+                    console.log(atmoRaw.data);
+                }
+                const { indice } = atmoRaw.data[INSEE_CITY_CODE].slice(-1)[0];
+                switch (indice) {
+                    case 'Bonne': rainLabel = 'A+'; break;
+                    case 'Moyenne': rainLabel = 'A='; break;
+                    case 'Dégradé': rainLabel = 'A-'; break;
+                    default: rainLabel = 'A!';
+                }
+            } catch(e) {
+                console.warn(`cannot fetch atmospheric report ${e}`);
+            }
+        } else {
+            if (VERBOSE) {
+                console.info(`rainLabel=${rainLabel}, skipping display of atmospheric report`);
             }
         }
 

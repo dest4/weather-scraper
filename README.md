@@ -17,7 +17,11 @@ Displays result on a LCD screen connected to an old Pine64 board I had lying aro
 - `DD` day of month
 - `MM` minimum temperature of the day (°C)
 - `NN` maximum temperature of the day (°C)
-- `RL` rain label: `ra` if mild rain in the next hour, `RA` if big one. If no rain forecast, gets the allergo-pollinic risk from [pollens.fr](https://pollens.fr/) instead: from `G0` (no risk) to `G3` (maximum risk).
+- `RL` rain label:
+  - `ra` if mild rain in the next hour,
+  - `RA` if big one.
+  - If no rain forecast, gets the allergo-pollinic risk from [pollens.fr](https://pollens.fr/) instead: from `G2` (high risk) to `G3` (maximum risk).
+  - If no pollen alert, gets the atmospheric report from [AirParif](https://airparif.asso.fr/): `A+` (good), `A=` (medium), `A-` (poor), `A!` (bad).
 
 ### Line 2
 Weather description according to Météo France.
